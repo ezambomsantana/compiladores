@@ -1,14 +1,32 @@
 grammar compilador;
 
+
+@header {
+         import java.util.Set;
+         
+}
+
+@members {
+         String teste = "";         
+          
+         public static boolean isNumeric(String str)
+        {
+            for (char c : str.toCharArray())
+            {
+                if (!Character.isDigit(c)) return false;
+            }
+            return true;
+        }
+}
 // regras sintáticas
 
 programa : pacote? classe*;
 
 pacote : PACKAGE IDENTIFICADOR (PONTO IDENTIFICADOR)* PV;
 
-classe : VISIBILIDADE? CLASS IDENTIFICADOR AC metodo* FC;
+classe : PUBLIC? CLASS IDENTIFICADOR AC metodo* FC;
 
-metodo : VISIBILIDADE? retorno IDENTIFICADOR AP 
+metodo : visibilidade? retorno IDENTIFICADOR AP 
          (parametro lista_parametro*)? FP AC declaracao* FC;
 
 parametro : TIPO IDENTIFICADOR;
@@ -18,7 +36,17 @@ retorno : TIPO | VOID;
 
 declaracao : var_declaracao PV | if_declaracao | for_declaracao;             
 
-var_declaracao : TIPO IDENTIFICADOR (OP_ATRIBUICAO valor)? ;
+var_declaracao : TIPO IDENTIFICADOR (OP_ATRIBUICAO valor)? {
+                                                            
+   if ($TIPO.text.equals("int")) {        
+    System.out.println("Tipo: " + $TIPO.text);    
+    if (!isNumeric($valor.text)) {                        
+      System.out.println("Tipo inválido! Linha: " + $start.getLine());
+    }                                 
+   }
+                                        
+};
+                 
 if_declaracao : if_dec
                 (ELSE if_dec)*
                 (ELSE AC declaracao* FC)?              
@@ -34,13 +62,15 @@ expr_aritmetica : valor OP_ARITMETICO valor | IDENTIFICADOR OP_UNARIO;
 
 valor : IDENTIFICADOR | NUMERO;
 
+visibilidade : PUBLIC | VISIBILIDADE;
+
 // regras léxicas
 FOR : 'for';
 PACKAGE : 'package';
 PONTO : '.';
 CLASS : 'class';
 VIRGULA : ',';
-VISIBILIDADE : PUBLIC | 'private' | 'protected';
+VISIBILIDADE : 'private' | 'protected';
 PUBLIC : 'public';
 VOID : 'void';
 ELSE : 'else';
