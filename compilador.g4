@@ -1,30 +1,39 @@
-grammar compilador;
-
+grammar compilador2;
 
 @header {
-         import java.util.Set;
          
 }
 
 @members {
-         String teste = "";         
           
-         public static boolean isNumeric(String str)
-        {
+        public static boolean isNumeric(String str) {
             for (char c : str.toCharArray())
             {
                 if (!Character.isDigit(c)) return false;
             }
             return true;
         }
+
+        public static boolean isString(String str) {
+            char [] vetor = str.toCharArray();
+            if (vetor[0] == '\"') {
+                return true;
+            } else {
+                return false;
+            }
+        }
 }
+
 // regras sintáticas
 
 programa : pacote? classe*;
 
 pacote : PACKAGE IDENTIFICADOR (PONTO IDENTIFICADOR)* PV;
 
-classe : PUBLIC? CLASS IDENTIFICADOR AC metodo* FC;
+classe : PUBLIC? CLASS IDENTIFICADOR AC metodo* FC {
+     System.out.println("Classe = " + $IDENTIFICADOR.text);                                               
+                                                    
+};
 
 metodo : visibilidade? retorno IDENTIFICADOR AP 
          (parametro lista_parametro*)? FP AC declaracao* FC;
@@ -37,15 +46,28 @@ retorno : TIPO | VOID;
 declaracao : var_declaracao PV | if_declaracao | for_declaracao;             
 
 var_declaracao : TIPO IDENTIFICADOR (OP_ATRIBUICAO valor)? {
-                                                            
-   if ($TIPO.text.equals("int")) {        
-    System.out.println("Tipo: " + $TIPO.text);    
-    if (!isNumeric($valor.text)) {                        
-      System.out.println("Tipo inválido! Linha: " + $start.getLine());
-    }                                 
-   }
-                                        
+  if ($TIPO.text.equals("int")) {
+    if (isNumeric($valor.text)) {            
+       System.out.println("Tipo = " + $TIPO.text);
+       System.out.println("Valor = " + $valor.text);   
+    } else {
+       System.out.println("Valor não é um inteiro: " + $start.getLine());       
+     }                             
+  } else if ($TIPO.text.equals("String")) {
+    if (isString($valor.text)) {            
+       System.out.println("Tipo = " + $TIPO.text);
+       System.out.println("Valor = " + $valor.text);   
+    } else {
+       System.out.println("Valor não é uma String: " + $start.getLine());       
+     }                                             
+                                           
+  } 
+                                           
+                                                                                                         
 };
+                 
+                 
+                 
                  
 if_declaracao : if_dec
                 (ELSE if_dec)*
@@ -60,7 +82,7 @@ if_dec : IF AP expr_logica FP AC  declaracao* FC;
 expr_logica : valor OP_LOGICO valor;
 expr_aritmetica : valor OP_ARITMETICO valor | IDENTIFICADOR OP_UNARIO;
 
-valor : IDENTIFICADOR | NUMERO;
+valor : IDENTIFICADOR | NUMERO | STRING;
 
 visibilidade : PUBLIC | VISIBILIDADE;
 
@@ -71,6 +93,7 @@ PONTO : '.';
 CLASS : 'class';
 VIRGULA : ',';
 VISIBILIDADE : 'private' | 'protected';
+STRING : '\"' IDENTIFICADOR* '\"'; 
 PUBLIC : 'public';
 VOID : 'void';
 ELSE : 'else';
@@ -80,7 +103,7 @@ FC : '}';
 AP : '(';
 FP : ')';
 PV : ';';
-TIPO : 'int' | 'double' | 'char' | 'long' | 'float';
+TIPO : 'int' | 'double' | 'char' | 'long' | 'float' | 'String';
 OP_LOGICO : '<' | '>' | '==' | '!=' | '>=' | '<=';
 OP_ATRIBUICAO : '=';
 OP_ARITMETICO : '+' | '-' | '*' | '/' | '%';
